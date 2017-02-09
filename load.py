@@ -12,7 +12,8 @@ import pandas as pd
 
 
 def load_mat(path):
-	buff = sio.loadmat(path)['d'][0,0]
+	buff = sio.loadmat(path)
+	buff = buff['d'][0,0]
 	item = dict()
 	labels = ['RR_2Hz','time_2Hz','seizureStart','seizureEnd','time','Fs','N','RR_raw','RR_pos','data']
 	for l in labels:
@@ -83,27 +84,27 @@ def load_data(path,data_type):
 			return stop_flag
 	return prog_load
 
-def step_del(path,data_type,step_time=60):
+def step_del(path,data_type,f_window_step=60):
 	csvfile=open(path)
 	gen = csv.reader(csvfile, delimiter=',')
 	row_first=gen.__next__()
 	ind = row_first.index(data_type)
 	yield 0
 	step=1
-	count_time=step_time
+	count_time=f_window_step
 	for row in gen:
 		if row[ind]=='':
 			yield step
 		if float(row[ind])>count_time:
 			yield step
-			count_time+=step_time
+			count_time+=f_window_step
 			step=1
 		else:
 			step+=1
 	else:
 		return step	
 
-def step_add(path,data_type,start_time=300,step_time=60):
+def step_add(path,data_type,f_window_size=300,f_window_step=60):
 	csvfile=open(path)
 	gen = csv.reader(csvfile, delimiter=',')
 	row_first=gen.__next__()
@@ -112,11 +113,11 @@ def step_add(path,data_type,start_time=300,step_time=60):
 	for row in gen:
 		if row[ind]=='':
 			yield step
-		if float(row[ind])>start_time:
+		if float(row[ind])>f_window_size:
 			yield step
-			start_time+=step_time
+			f_window_size+=f_window_step
 			step=1
 		else:
 			step+=1
 	else:
-		return step	
+		return step
