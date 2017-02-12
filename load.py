@@ -1,15 +1,17 @@
 ###################################################################################################
 #   rewrite .mat into .csv
 ###################################################################################################
-# item = load_mat('D:/Diploma/Signals/Row_Signals/' + test + '.mat')
-# item.to_csv('D:/Diploma/Signals/Ready_Signals/' + test + '.csv', mode = 'w',index=False)
+# patients=['patient_name']
+# path_mat      = 'C:/Path_to_matfile/'
+# path_csv      = 'C:/Path_to_new_generated_csvfile/'
+# for patient in patients:
+# 	item = load_mat(path_mat + patient + '.mat')
+# 	item.to_csv(path_csv + patient + '.csv', mode = 'w',index=False)
 ###################################################################################################
 import csv
 import scipy.io as sio
 import numpy as np
 import pandas as pd
-
-
 
 def load_mat(path):
 	buff = sio.loadmat(path)
@@ -38,86 +40,3 @@ def load_column(path,data_type):
 			except:
 				item[row_first[ind]]=[float(row[ind])]
 	return item
-
-def load_data(path,data_type):
-	csvfile=open(path)
-	gen = csv.reader(csvfile, delimiter=',')
-	row_first=gen.__next__()
-	ind = [row_first.index(i) for i in data_type]
-	stop_flag = 0
-
-	def prog_load(item, step_add,step_del, mode='all'):
-		'''
-		return  1 reach end of the file at this step
-		return -1 end was reached before
-		return  0 all is ok 
-		'''
-		nonlocal stop_flag
-
-		count_step=1
-		if stop_flag == 1 or stop_flag ==-1:
-			stop_flag =-1
-			return stop_flag
-		
-		for row in gen:
-			for i in ind:
-				if '' == row[i]:
-					stop_flag = 1
-					return stop_flag
-
-				try:
-					item[row_first[i]].append(float(row[i]))
-				except:
-					item[row_first[i]]=[float(row[i])]
-			if mode != 'all':
-				if step_add == count_step:
-					if mode == 'step':
-						for i in ind:
-							del item[row_first[i]][:step_del]
-					return stop_flag
-				else:
-					count_step+=1
-		else:
-			for i in ind:
-				del item[row_first[i]][:step_del-1]
-			stop_flag = 1
-			return stop_flag
-	return prog_load
-
-def step_del(path,data_type,f_window_step=60):
-	csvfile=open(path)
-	gen = csv.reader(csvfile, delimiter=',')
-	row_first=gen.__next__()
-	ind = row_first.index(data_type)
-	yield 0
-	step=1
-	count_time=f_window_step
-	for row in gen:
-		if row[ind]=='':
-			yield step
-		if float(row[ind])>count_time:
-			yield step
-			count_time+=f_window_step
-			step=1
-		else:
-			step+=1
-	else:
-		return step	
-
-def step_add(path,data_type,f_window_size=300,f_window_step=60):
-	csvfile=open(path)
-	gen = csv.reader(csvfile, delimiter=',')
-	row_first=gen.__next__()
-	ind = row_first.index(data_type)
-	step=1
-	for row in gen:
-		if row[ind]=='':
-			yield step
-		if float(row[ind])>f_window_size:
-			yield step
-			f_window_size+=f_window_step
-			step=1
-		else:
-			step+=1
-	else:
-		return step
