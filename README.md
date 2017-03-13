@@ -1,2 +1,2 @@
-# Epileptic-seizure-Prediction
-Epileptic seizure Prediction algorithm 
+Epileptic Seizure Prediction Algorithms Based on Heart Rate Variability
+
